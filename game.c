@@ -17,7 +17,7 @@ void deck_init(struct deck *deck)
 	}
 }
 
-void shufle_cards(const struct card **cards, int num_cards)
+static void shufle_cards(const struct card **cards, int num_cards)
 {
 	int i;
 	for (i = 0; i < num_cards; i++)
@@ -29,7 +29,7 @@ void shufle_cards(const struct card **cards, int num_cards)
 	}	
 }
 
-void shufle_deck(struct deck *deck)
+void deck_sufle(struct deck *deck)
 {
 	shufle_cards(deck->cards, NUM_CARDS_ON_A_DECK);
 }
@@ -39,7 +39,7 @@ void stock_shufle(struct stock *stock)
 	shufle_cards(stock->pile, stock->count);
 }
 
-void print_card(const struct card *card)
+static void print_card(const struct card *card)
 {
 	static const char *names[MAX_CARD_VALUE] = {
 		"ACE",
@@ -83,7 +83,7 @@ void print_card(const struct card *card)
 #endif
 }
 
-void print_cards(const struct card * const cards[], int num_cards)
+static void print_cards(const struct card * const cards[], int num_cards)
 {
 	int i;
 	for (i = 0; i < num_cards; i++) {
@@ -91,7 +91,7 @@ void print_cards(const struct card * const cards[], int num_cards)
 	}	
 }
 
-void print_deck(const struct deck *deck)
+void deck_print(const struct deck *deck)
 {
 	print_cards(deck->cards, NUM_CARDS_ON_A_DECK);
 }

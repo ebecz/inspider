@@ -34,4 +34,14 @@ struct deck {
 	const struct card *cards[NUM_CARDS_ON_A_DECK];
 };
 
+
+void deck_init(struct deck *deck);
+void deck_print(const struct deck *deck);
+void deck_sufle(struct deck *deck);
+
+void stock_init(struct stock *stock);
+void stock_fill(struct stock *stock, const struct deck *deck);
+void stock_shufle(struct stock *stock);
+void stock_print(const struct stock *stock);
+
 #endif
