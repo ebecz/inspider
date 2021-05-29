@@ -104,3 +104,26 @@ void tableau_draw(struct tableau *tableau)
 		stack_push(stack, stock_pick(&tableau->stock));
 	}
 }
+
+void tableau_move(struct tableau *tableau, unsigned int src, unsigned int dst)
+{
+	if (src > NUM_STACKS) {
+		error(-1, 0, "Unable to move from a non existing stack (%d)", src);
+	}
+	if (src > NUM_STACKS || dst > NUM_STACKS) {
+		error(-1, 0, "Unable to move to a non existing stack (%d)", dst);
+	}
+
+	struct stack *src_stack = &tableau->stacks[src];
+	struct stack *dst_stack = &tableau->stacks[dst];
+
+	if (src_stack->count == 0) {
+		error(-1, 0, "Source stack is empty");
+	}
+
+	if (dst_stack->count > MAX_CARDS_ON_A_PILE) {
+		error(-1, 0, "Stack overflow %d", MAX_CARDS_ON_A_PILE);
+	}
+	dst_stack->pile[dst_stack->count++] = src_stack->pile[--src_stack->count];
+}
+

@@ -115,17 +115,41 @@ static void nctableau_print(const struct nctableau *nctableau)
 void nctableau_run(struct nctableau *nctableau)
 {
 	int cmd;
+	int state = 0;
+	int i;
+	int stash[10] = {0, };
 	for(;;){
 		nctableau_print(nctableau);
-		cmd = getch();		
-		switch(cmd) {
-			case 'd':
-				tableau_draw(&nctableau->tableau);
+		cmd = getch();
+		for (i = 0; i < 10 - 1; i++){
+			stash[i + 1] = stash[i];
+		}
+		stash[0] = cmd;
+		switch(state) {
+			case 1:
+				swprintf(nctableau->msg, GAME_MSG_SIZE, L"Move to where? [0-9]");
+				state = 2;
 				break;
-			case 'q':
-				return;
+			case 2:
+				swprintf(nctableau->msg, GAME_MSG_SIZE, L"Moved %d to %d", stash[1] - '0', stash[0] - '0');
+				tableau_move(&nctableau->tableau, stash[1] - '0', stash[0] - '0');
+				state = 0;
+				break;
 			default:
-				swprintf(nctableau->msg, GAME_MSG_SIZE, L"Unknow command: %c", (char)cmd);
+				switch(cmd) {
+					case 'd':
+						tableau_draw(&nctableau->tableau);
+						break;
+					case 'm':
+						swprintf(nctableau->msg, GAME_MSG_SIZE, L"Which collumn to Move? [0-9]");
+						state = 1;
+						break;
+					case 'q':
+						return;
+					default:
+						swprintf(nctableau->msg, GAME_MSG_SIZE, L"Unknow command: %c", (char)cmd);
+						break;
+				}
 				break;
 		}
 	}
