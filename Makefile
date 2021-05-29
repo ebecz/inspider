@@ -1,5 +1,5 @@
 
 CFLAGS = -Werror -Wall
-LDLIBS = -lncurses
+LDLIBS = -lncursesw
 
 main: main.o game.o gamec.o
