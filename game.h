@@ -24,16 +24,17 @@ struct stock {
 	int count;
 };
 
-struct tableau {
-	struct stack stacks[NUM_STACKS];
-	struct stock stock;
-};
 
 struct deck {
 	struct card _cards[NUM_CARDS_ON_A_DECK];
 	const struct card *cards[NUM_CARDS_ON_A_DECK];
 };
 
+struct tableau {
+	struct deck deck;
+	struct stock stock;
+	struct stack stacks[NUM_STACKS];
+};
 
 void deck_init(struct deck *deck);
 void deck_print(const struct deck *deck);
@@ -43,5 +44,9 @@ void stock_init(struct stock *stock);
 void stock_fill(struct stock *stock, const struct deck *deck);
 void stock_shufle(struct stock *stock);
 void stock_print(const struct stock *stock);
+
+void tableau_init(struct tableau *tableau);
+
+void tableau_print(const struct tableau *tableau);
 
 #endif

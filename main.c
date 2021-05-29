@@ -2,16 +2,9 @@
 
 int main(int argc, char *argv[])
 {
-	struct deck deck;
-	struct stock stock;
+	struct tableau tableau;
 
-	deck_init(&deck);
-	stock_init(&stock);
+	tableau_init(&tableau);
 
-	stock_fill(&stock, &deck);
-	stock_fill(&stock, &deck);
-	stock_shufle(&stock);
-
-	stock_print(&stock);
-
+	tableau_print(&tableau);
 }

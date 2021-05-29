@@ -118,3 +118,19 @@ void stock_fill(struct stock *stock, const struct deck *deck)
 		}
 	}
 }
+
+void tableau_init(struct tableau *tableau)
+{
+	memset(tableau, 0, sizeof(*tableau));
+	deck_init(&tableau->deck);
+	stock_init(&tableau->stock);
+
+	stock_fill(&tableau->stock, &tableau->deck);
+	stock_fill(&tableau->stock, &tableau->deck);
+	stock_shufle(&tableau->stock);
+}
+
+void tableau_print(const struct tableau *tableau)
+{
+	stock_print(&tableau->stock);
+}
