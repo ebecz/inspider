@@ -6,5 +6,7 @@ int main(int argc, char *argv[])
 
 	tableau_init(&tableau);
 
+	tableau_start(&tableau);
+
 	tableau_print(&tableau);
 }

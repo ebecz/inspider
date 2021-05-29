@@ -101,6 +101,11 @@ void stock_print(const struct stock *stock)
 	print_cards(stock->pile, stock->count);
 }
 
+void stack_print(const struct stack *stack)
+{
+	print_cards(stack->pile, stack->count);
+}
+
 void stock_init(struct stock *stock)
 {
 	memset(stock, 0, sizeof(*stock));
@@ -130,7 +135,43 @@ void tableau_init(struct tableau *tableau)
 	stock_shufle(&tableau->stock);
 }
 
+static const struct card *stock_pick(struct stock *stock)
+{
+	if (stock->count == 0) {
+		error(-1, 0, "Unable to draw from a empty stock");
+	}
+	return stock->pile[--stock->count];
+}
+
+static void stack_push(struct stack *stack, const struct card *card)
+{
+	if (stack->count > MAX_CARDS_ON_A_PILE) {
+		error(-1, 0, "Unable to push more than %d cards into a stack", MAX_CARDS_ON_A_PILE);
+	}
+	if (card == NULL) {
+		error(-1, 0, "Unable to push a non existant card into stack");
+	}
+	stack->pile[stack->count++] = card;
+}
+
+void tableau_start(struct tableau *tableau)
+{
+	int i;
+	const int INITIAL_DRAW = 52;
+	for (i = 0; i < INITIAL_DRAW; i++) {
+		struct stack *stack = &tableau->stacks[i % NUM_STACKS];
+		stack_push(stack, stock_pick(&tableau->stock));
+	}
+}
+
 void tableau_print(const struct tableau *tableau)
 {
+	int i;
+	for (i = 0; i < NUM_STACKS; i++) {
+		printf("STACK-%d\n\n", i);
+		stack_print(&tableau->stacks[i]);
+	}
+	printf("STOCK\n\n");
 	stock_print(&tableau->stock);
 }
+
