@@ -23,7 +23,8 @@ struct tableau {
 };
 
 struct deck {
-	struct card cards[NUM_CARDS_ON_A_DECK];
+	struct card _cards[NUM_CARDS_ON_A_DECK];
+	struct card *cards[NUM_CARDS_ON_A_DECK];
 };
 
 void fill_deck(struct deck *deck)
@@ -31,8 +32,9 @@ void fill_deck(struct deck *deck)
 	int i, j, n = 0;
 	for (i = 0; i < MAX_SUITS; i++) {
 		for (j = 0; j < MAX_CARD_VALUE; j++) {
-			deck->cards[n].value = j;
-			deck->cards[n].suit = i;
+			deck->_cards[n].value = j;
+			deck->_cards[n].suit = i;
+			deck->cards[n] = &deck->_cards[n];
 			n++;
 		}
 	}
@@ -44,7 +46,7 @@ void shufle_deck(struct deck *deck)
 	for (i = 0; i < NUM_CARDS_ON_A_DECK; i++)
 	{
 		int swap = rand() % NUM_CARDS_ON_A_DECK;
-		struct card save = deck->cards[swap];
+		struct card *save = deck->cards[swap];
 		deck->cards[swap] = deck->cards[i];
 		deck->cards[i] = save;
 	}	
@@ -98,7 +100,7 @@ void print_deck(const struct deck *deck)
 {
 	int i;
 	for (i = 0; i < NUM_CARDS_ON_A_DECK; i++) {
-		print_card(&deck->cards[i]);
+		print_card(deck->cards[i]);
 	}	
 }
 
