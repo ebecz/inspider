@@ -1,4 +1,4 @@
-#include "game.h"
+#include "gamec.h"
 
 int main(int argc, char *argv[])
 {

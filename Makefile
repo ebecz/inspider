@@ -1,4 +1,4 @@
 
 CFLAGS = -Werror -Wall
 
-main: main.o game.o
+main: main.o game.o gamec.o

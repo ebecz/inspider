@@ -37,16 +37,13 @@ struct tableau {
 };
 
 void deck_init(struct deck *deck);
-void deck_print(const struct deck *deck);
 void deck_sufle(struct deck *deck);
 
 void stock_init(struct stock *stock);
 void stock_fill(struct stock *stock, const struct deck *deck);
 void stock_shufle(struct stock *stock);
-void stock_print(const struct stock *stock);
 
 void tableau_init(struct tableau *tableau);
-void tableau_print(const struct tableau *tableau);
 void tableau_start(struct tableau *tableau);
 
 #endif
