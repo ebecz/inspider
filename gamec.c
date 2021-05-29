@@ -2,6 +2,9 @@
 #include <ncurses.h>
 #include <stddef.h>
 #include "gamec.h"
+#include <stdio.h>
+#include <wchar.h>
+#include <string.h>
 
 #define HEARTS     1
 #define CUBS     2
@@ -61,33 +64,20 @@ static void print_cards(const struct card * const cards[], int num_cards, int co
 	}	
 }
 
-void ndeck_print(const struct deck *deck)
-{
-	print_cards(deck->cards, NUM_CARDS_ON_A_DECK, 0);
-}
-
-void nstock_print(const struct stock *stock)
-{
-	print_cards(stock->pile, stock->count, 0);
-}
-
-void nstack_print(const struct stack *stack, int coloffset)
+static void nstack_print(const struct stack *stack, int coloffset)
 {
 	print_cards(stack->pile, stack->count, coloffset);
 }
 
-void tableau_print(const struct tableau *tableau)
+void nctableau_init(struct nctableau *nctableau)
 {
-	int i;
-	int row,col;
+	tableau_init(&nctableau->tableau);
+	tableau_start(&nctableau->tableau);
+
 
 	setlocale(LC_ALL, "");
-
 	initscr();
-
-	getmaxyx(stdscr, row, col);
-
-	if (row);
+	cbreak();
 
 	start_color();
 	init_pair(HEARTS, COLOR_RED, COLOR_WHITE);
@@ -95,12 +85,48 @@ void tableau_print(const struct tableau *tableau)
 	init_pair(CUBS, COLOR_BLACK, COLOR_WHITE);
 	init_pair(SPADES, COLOR_BLACK, COLOR_WHITE);
 
+	swprintf(nctableau->msg, GAME_MSG_SIZE, L"Welcome to the game.");
+}
+
+void nctableau_finish(const struct nctableau *nctableau)
+{
+	endwin();
+}
+
+static void nctableau_print(const struct nctableau *nctableau)
+{
+	int i;
+	int row,col;
+	const struct tableau *tableau = &nctableau->tableau;
+
+	getmaxyx(stdscr, row, col);
+
+	clear();
+
 	for (i = 0; i < NUM_STACKS; i++) {
 		nstack_print(&tableau->stacks[i], i * col / NUM_STACKS);
 	}
 
+	mvprintw(row - 1, 0, "%ls", nctableau->msg);
+
 	refresh();
-	getch();
-	endwin();
 }
 
+void nctableau_run(struct nctableau *nctableau)
+{
+	int cmd;
+	for(;;){
+		nctableau_print(nctableau);
+		cmd = getch();		
+		switch(cmd) {
+			case 'd':
+				tableau_draw(&nctableau->tableau);
+				break;
+			case 'q':
+				return;
+			default:
+				swprintf(nctableau->msg, GAME_MSG_SIZE, L"Unknow command: %c", (char)cmd);
+				break;
+		}
+	}
+}

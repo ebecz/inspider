@@ -1,12 +1,14 @@
+#include <stddef.h>
 #include "gamec.h"
+
+struct nctableau nctableau;
 
 int main(int argc, char *argv[])
 {
-	struct tableau tableau;
+	nctableau_init(&nctableau);
 
-	tableau_init(&tableau);
+	nctableau_run(&nctableau);
 
-	tableau_start(&tableau);
-
-	tableau_print(&tableau);
+	nctableau_finish(&nctableau);
 }
+

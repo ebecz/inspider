@@ -46,4 +46,6 @@ void stock_shufle(struct stock *stock);
 void tableau_init(struct tableau *tableau);
 void tableau_start(struct tableau *tableau);
 
+void tableau_draw(struct tableau *tableau);
+
 #endif

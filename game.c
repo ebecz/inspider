@@ -96,3 +96,11 @@ void tableau_start(struct tableau *tableau)
 	}
 }
 
+void tableau_draw(struct tableau *tableau)
+{
+	int i;
+	for (i = 0; i < NUM_STACKS; i++) {
+		struct stack *stack = &tableau->stacks[i];
+		stack_push(stack, stock_pick(&tableau->stock));
+	}
+}
