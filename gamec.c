@@ -61,7 +61,7 @@ static void print_cards(const struct card * const cards[], int num_cards, int co
 	int i;
 	for (i = 0; i < num_cards; i++) {
 		print_card(cards[i], coloffset, i);
-	}	
+	}
 }
 
 static void nstack_print(const struct stack *stack, int coloffset)
@@ -112,56 +112,114 @@ static void nctableau_print(const struct nctableau *nctableau)
 	refresh();
 }
 
+struct command {
+	int cmd;
+	int (*function)(struct nctableau *nctableau, const int stash[]);
+	const wchar_t *querry[10];
+	int num_querry;
+};
+
+int _move(struct nctableau *nctableau, const int stash[])
+{
+	int res = tableau_move(&nctableau->tableau, stash[1] - '0', stash[0] - '0');
+	if (res == 0) {
+		swprintf(nctableau->msg, GAME_MSG_SIZE, L"Moved %d to %d", stash[1] - '0', stash[0] - '0');
+	} else {
+		swprintf(nctableau->msg, GAME_MSG_SIZE, L"Invalid Move");
+	}
+	return 0;
+}
+
+int _draw(struct nctableau *nctableau, const int stash[])
+{
+	int res = tableau_draw(&nctableau->tableau);
+	if (res < 0) {
+		swprintf(nctableau->msg, GAME_MSG_SIZE, L"There is no Cards on the Stock");
+	} else {
+		swprintf(nctableau->msg, GAME_MSG_SIZE, L"Drow %d cards", res);
+	}
+	return 0;
+}
+
+int _quit(struct nctableau *nctableau, const int stash[])
+{
+	return -1;
+}
+
+#define NUM_COMMANDS 3
+const struct command list[NUM_COMMANDS] =
+{
+	{
+		.cmd = 'm',
+		.num_querry = 2,
+		.querry = {
+			L"Which collumn to Move? [0-9]",
+			L"Move to where? [0-9]",
+		},
+		.function = _move,
+	},
+	{
+		.cmd = 'd',
+		.num_querry = 0,
+		.function = _draw,
+	},
+	{
+		.cmd = 'q',
+		.num_querry = 0,
+		.function = _quit,
+	},
+};
+
+int _complain(struct nctableau *nctableau, const int stash[])
+{
+	swprintf(nctableau->msg, GAME_MSG_SIZE, L"Unknow command: %c", (char)stash[0]);
+	return 0;
+}
+
+const struct command complain_cmd = {
+	.cmd = 'd',
+	.num_querry = 0,
+	.function = _complain,
+};
+
+const struct command *find_command(int cmd)
+{
+	int i;
+	for (i = 0; i < NUM_COMMANDS; i++){
+		if (cmd == list[i].cmd)
+			return &list[i];
+	}
+	return &complain_cmd;
+}
+
+void push_stash(int stash[], int size, int cmd) {
+	int i;
+	for (i = 0; i < size - 1; i++) {
+		stash[i + 1] = stash[i];
+	}
+	stash[0] = cmd;
+}
+
 void nctableau_run(struct nctableau *nctableau)
 {
 	int cmd;
-	int state = 0;
 	int i;
 	int stash[10] = {0, };
-	int res;
+	const struct command *command;
 	for(;;){
 		nctableau_print(nctableau);
 		cmd = getch();
-		for (i = 0; i < 10 - 1; i++){
-			stash[i + 1] = stash[i];
+		push_stash(stash, 10, cmd);
+		command = find_command(cmd);
+		for (i = 0; i < command->num_querry; i++) {
+			swprintf(nctableau->msg, GAME_MSG_SIZE, L"%ls", command->querry[i]);
+			nctableau_print(nctableau);
+			cmd = getch();
+			push_stash(stash, 10, cmd);
 		}
-		stash[0] = cmd;
-		switch(state) {
-			case 1:
-				swprintf(nctableau->msg, GAME_MSG_SIZE, L"Move to where? [0-9]");
-				state = 2;
-				break;
-			case 2:
-				res = tableau_move(&nctableau->tableau, stash[1] - '0', stash[0] - '0');
-				if (res == 0) {
-					swprintf(nctableau->msg, GAME_MSG_SIZE, L"Moved %d to %d", stash[1] - '0', stash[0] - '0');
-				} else {
-					swprintf(nctableau->msg, GAME_MSG_SIZE, L"Invalid Move");
-
-				}
-				state = 0;
-				break;
-			default:
-				switch(cmd) {
-					case 'd':
-						res = tableau_draw(&nctableau->tableau);
-						if (res < 0) {
-							swprintf(nctableau->msg, GAME_MSG_SIZE, L"There is no Cards on the Stock");
-						} else {
-							swprintf(nctableau->msg, GAME_MSG_SIZE, L"Drow %d cards", res);
-						}
-						break;
-					case 'm':
-						swprintf(nctableau->msg, GAME_MSG_SIZE, L"Which collumn to Move? [0-9]");
-						state = 1;
-						break;
-					case 'q':
-						return;
-					default:
-						swprintf(nctableau->msg, GAME_MSG_SIZE, L"Unknow command: %c", (char)cmd);
-						break;
-				}
-				break;
+		if (command->function(nctableau, stash) < 0) {
+			return;
 		}
 	}
 }
+
