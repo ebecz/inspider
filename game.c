@@ -96,13 +96,20 @@ void tableau_start(struct tableau *tableau)
 	}
 }
 
-void tableau_draw(struct tableau *tableau)
+int tableau_draw(struct tableau *tableau)
 {
 	int i;
+	if (tableau->stock.count == 0) {
+		return -1;
+	}
 	for (i = 0; i < NUM_STACKS; i++) {
 		struct stack *stack = &tableau->stacks[i];
-		stack_push(stack, stock_pick(&tableau->stock));
+		const struct card *card = stock_pick(&tableau->stock);
+		if (card == NULL)
+			break;
+		stack_push(stack, card);
 	}
+	return i;
 }
 
 int find_largest_group(struct stack *stack)

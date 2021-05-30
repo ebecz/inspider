@@ -144,7 +144,12 @@ void nctableau_run(struct nctableau *nctableau)
 			default:
 				switch(cmd) {
 					case 'd':
-						tableau_draw(&nctableau->tableau);
+						res = tableau_draw(&nctableau->tableau);
+						if (res < 0) {
+							swprintf(nctableau->msg, GAME_MSG_SIZE, L"There is no Cards on the Stock");
+						} else {
+							swprintf(nctableau->msg, GAME_MSG_SIZE, L"Drow %d cards", res);
+						}
 						break;
 					case 'm':
 						swprintf(nctableau->msg, GAME_MSG_SIZE, L"Which collumn to Move? [0-9]");
