@@ -11,14 +11,14 @@
 #define DIAMONDS  3
 #define SPADES    4
 
-static const wchar_t *BLACK_SPADE = L"\u2660";
-//static const wchar_t *WHITE_HEART = L"\u2661";
-//static const wchar_t *WHITE_DIAMONDS = L"\u2662";
-static const wchar_t *BLACK_CUBS = L"\u2663";
-//static const wchar_t *WHITE_SPADE = L"\u2664";
-static const wchar_t *BLACK_HEART = L"\u2665";
-static const wchar_t *BLACK_DIAMONDS = L"\u2666";
-//static const wchar_t *WHITE_CUBS = L"\u2667";
+#define BLACK_SPADE	L"\u2660"
+#define WHITE_HEART	L"\u2661"
+#define WHITE_DIAMONDS	L"\u2662"
+#define BLACK_CUBS	L"\u2663"
+#define WHITE_SPADE	L"\u2664"
+#define BLACK_HEART	L"\u2665"
+#define BLACK_DIAMONDS	L"\u2666"
+#define WHITE_CUBS 	L"\u2667"
 
 
 static void print_card(const struct card *card, unsigned int x, unsigned int y)
@@ -44,12 +44,12 @@ static void print_card(const struct card *card, unsigned int x, unsigned int y)
 		DIAMONDS,
 		SPADES,
 	};
-	static const wchar_t *wsuits[MAX_SUITS];
-
-        wsuits[0] = BLACK_SPADE;
-        wsuits[1] = BLACK_HEART;
-        wsuits[2] = BLACK_DIAMONDS;
-        wsuits[3] = BLACK_CUBS;
+	static const wchar_t *wsuits[MAX_SUITS] = {
+		BLACK_SPADE,
+		BLACK_CUBS,
+		BLACK_HEART,
+		BLACK_CUBS
+	};
 
 	attron(COLOR_PAIR(suits[card->suit]));
 	mvprintw(y, x, "[ %ls %6s ]", wsuits[card->suit], names[card->value]);
