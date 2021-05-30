@@ -105,25 +105,52 @@ void tableau_draw(struct tableau *tableau)
 	}
 }
 
-void tableau_move(struct tableau *tableau, unsigned int src, unsigned int dst)
+int find_largest_group(struct stack *stack)
 {
+	int i;
+	int top = 0;
+	for (i = 0; i < stack->count; i++) {
+		if (stack->pile[i]->suit != stack->pile[top]->suit) {
+			top = i;
+		}
+	}
+	return top;
+}
+
+int tableau_move(struct tableau *tableau, unsigned int src, unsigned int dst)
+{
+	int i, j, top;
 	if (src > NUM_STACKS) {
-		error(-1, 0, "Unable to move from a non existing stack (%d)", src);
+		return -1;
 	}
 	if (src > NUM_STACKS || dst > NUM_STACKS) {
-		error(-1, 0, "Unable to move to a non existing stack (%d)", dst);
+		return -1;
 	}
 
 	struct stack *src_stack = &tableau->stacks[src];
 	struct stack *dst_stack = &tableau->stacks[dst];
 
 	if (src_stack->count == 0) {
-		error(-1, 0, "Source stack is empty");
+		return -1;
 	}
 
 	if (dst_stack->count > MAX_CARDS_ON_A_PILE) {
-		error(-1, 0, "Stack overflow %d", MAX_CARDS_ON_A_PILE);
+		return -1;
 	}
-	dst_stack->pile[dst_stack->count++] = src_stack->pile[--src_stack->count];
+
+
+	for (top = find_largest_group(src_stack); top < src_stack->count; top++) {
+		for (i = top; i < src_stack->count; i++) {
+			if (dst_stack->pile[dst_stack->count - 1]->value == src_stack->pile[i]->value + 1) {
+				for (j = i; j < src_stack->count; j++) {
+					dst_stack->pile[dst_stack->count++] = src_stack->pile[j];
+				}
+				src_stack->count = i;
+				return 0;
+			}
+		}
+	}
+
+	return -1;
 }
 

@@ -118,6 +118,7 @@ void nctableau_run(struct nctableau *nctableau)
 	int state = 0;
 	int i;
 	int stash[10] = {0, };
+	int res;
 	for(;;){
 		nctableau_print(nctableau);
 		cmd = getch();
@@ -131,8 +132,13 @@ void nctableau_run(struct nctableau *nctableau)
 				state = 2;
 				break;
 			case 2:
-				swprintf(nctableau->msg, GAME_MSG_SIZE, L"Moved %d to %d", stash[1] - '0', stash[0] - '0');
-				tableau_move(&nctableau->tableau, stash[1] - '0', stash[0] - '0');
+				res = tableau_move(&nctableau->tableau, stash[1] - '0', stash[0] - '0');
+				if (res == 0) {
+					swprintf(nctableau->msg, GAME_MSG_SIZE, L"Moved %d to %d", stash[1] - '0', stash[0] - '0');
+				} else {
+					swprintf(nctableau->msg, GAME_MSG_SIZE, L"Invalid Move");
+
+				}
 				state = 0;
 				break;
 			default:
