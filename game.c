@@ -161,3 +161,17 @@ int tableau_move(struct tableau *tableau, unsigned int src, unsigned int dst)
 	return -1;
 }
 
+int tableau_auto(struct tableau *tableau)
+{
+	int i, j;
+	int res;
+	for (i = 0; i < NUM_STACKS; i++) {
+		for (j = 0; j < NUM_STACKS; j++) {
+			res = tableau_move(tableau, i, j);
+			if (res == 0)
+				return 0;
+		}
+	}
+	return -1;
+}
+

@@ -48,5 +48,6 @@ void tableau_start(struct tableau *tableau);
 
 int tableau_draw(struct tableau *tableau);
 int tableau_move(struct tableau *tableau, unsigned int src, unsigned int dst);
+int tableau_auto(struct tableau *tableau);
 
 #endif

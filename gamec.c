@@ -141,12 +141,22 @@ int _draw(struct nctableau *nctableau, const int stash[])
 	return 0;
 }
 
+int _auto(struct nctableau *nctableau, const int stash[])
+{	int res = tableau_auto(&nctableau->tableau);
+	if (res < 0) {
+		swprintf(nctableau->msg, GAME_MSG_SIZE, L"There is no Available movements");
+	} else {
+		swprintf(nctableau->msg, GAME_MSG_SIZE, L"Auto Moved", res);
+	}
+	return 0;
+}
+
 int _quit(struct nctableau *nctableau, const int stash[])
 {
 	return -1;
 }
 
-#define NUM_COMMANDS 3
+#define NUM_COMMANDS 4
 const struct command list[NUM_COMMANDS] =
 {
 	{
@@ -163,6 +173,12 @@ const struct command list[NUM_COMMANDS] =
 		.num_querry = 0,
 		.function = _draw,
 	},
+	{
+		.cmd = 'a',
+		.num_querry = 0,
+		.function = _auto,
+	},
+
 	{
 		.cmd = 'q',
 		.num_querry = 0,
