@@ -89,7 +89,7 @@ static void stack_push(struct stack *stack, const struct card *card)
 void tableau_start(struct tableau *tableau)
 {
 	int i;
-	const int INITIAL_DRAW = 52;
+	const int INITIAL_DRAW = 54;
 	for (i = 0; i < INITIAL_DRAW; i++) {
 		struct stack *stack = &tableau->stacks[i % NUM_STACKS];
 		stack_push(stack, stock_pick(&tableau->stock));
