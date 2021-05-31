@@ -2,13 +2,15 @@
 #define __GAMEC_H__
 
 #include <stddef.h>
-#include "game.h"
+#include "ggame.h"
 
 #define GAME_MSG_SIZE 1280
 
 struct nctableau {
+	struct deck deck;
 	struct tableau tableau;
 	wchar_t msg[GAME_MSG_SIZE];
+	struct gtableau gtableau;
 };
 
 void nctableau_init(struct nctableau *nctableau);

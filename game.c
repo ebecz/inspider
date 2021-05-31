@@ -56,14 +56,13 @@ void stock_fill(struct stock *stock, const struct deck *deck)
 	}
 }
 
-void tableau_init(struct tableau *tableau)
+void tableau_init(struct tableau *tableau, const struct deck *deck)
 {
 	memset(tableau, 0, sizeof(*tableau));
-	deck_init(&tableau->deck);
 	stock_init(&tableau->stock);
 
-	stock_fill(&tableau->stock, &tableau->deck);
-	stock_fill(&tableau->stock, &tableau->deck);
+	stock_fill(&tableau->stock, deck);
+	stock_fill(&tableau->stock, deck);
 	stock_shufle(&tableau->stock);
 }
 
@@ -134,6 +133,10 @@ int tableau_move(struct tableau *tableau, unsigned int src, unsigned int dst)
 		return -1;
 	}
 
+	if (src == dst) {
+		return -1;
+	}
+
 	struct stack *src_stack = &tableau->stacks[src];
 	struct stack *dst_stack = &tableau->stacks[dst];
 
@@ -144,7 +147,6 @@ int tableau_move(struct tableau *tableau, unsigned int src, unsigned int dst)
 	if (dst_stack->count > MAX_CARDS_ON_A_PILE) {
 		return -1;
 	}
-
 
 	for (top = find_largest_group(src_stack); top < src_stack->count; top++) {
 		for (i = top; i < src_stack->count; i++) {
@@ -158,20 +160,6 @@ int tableau_move(struct tableau *tableau, unsigned int src, unsigned int dst)
 		}
 	}
 
-	return -1;
-}
-
-int tableau_auto(struct tableau *tableau)
-{
-	int i, j;
-	int res;
-	for (i = 0; i < NUM_STACKS; i++) {
-		for (j = 0; j < NUM_STACKS; j++) {
-			res = tableau_move(tableau, i, j);
-			if (res == 0)
-				return 0;
-		}
-	}
 	return -1;
 }
 

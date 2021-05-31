@@ -1,10 +1,11 @@
 #include <locale.h>
 #include <ncurses.h>
 #include <stddef.h>
-#include "gamec.h"
 #include <stdio.h>
 #include <wchar.h>
 #include <string.h>
+#include "gamec.h"
+#include "ggame.h"
 
 #define HEARTS     1
 #define CUBS     2
@@ -71,9 +72,11 @@ static void nstack_print(const struct stack *stack, int coloffset)
 
 void nctableau_init(struct nctableau *nctableau)
 {
-	tableau_init(&nctableau->tableau);
+	deck_init(&nctableau->deck);
+	tableau_init(&nctableau->tableau, &nctableau->deck);
 	tableau_start(&nctableau->tableau);
 
+	gtableau_init(&nctableau->gtableau, &nctableau->tableau);
 
 	setlocale(LC_ALL, "");
 	initscr();
@@ -142,7 +145,7 @@ int _draw(struct nctableau *nctableau, const int stash[])
 }
 
 int _auto(struct nctableau *nctableau, const int stash[])
-{	int res = tableau_auto(&nctableau->tableau);
+{	int res = 1; //tableau_auto(&nctableau->tableau);
 	if (res < 0) {
 		swprintf(nctableau->msg, GAME_MSG_SIZE, L"There is no Available movements");
 	} else {

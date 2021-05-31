@@ -31,7 +31,6 @@ struct deck {
 };
 
 struct tableau {
-	struct deck deck;
 	struct stock stock;
 	struct stack stacks[NUM_STACKS];
 };
@@ -43,11 +42,10 @@ void stock_init(struct stock *stock);
 void stock_fill(struct stock *stock, const struct deck *deck);
 void stock_shufle(struct stock *stock);
 
-void tableau_init(struct tableau *tableau);
+void tableau_init(struct tableau *tableau, const struct deck *deck);
 void tableau_start(struct tableau *tableau);
 
 int tableau_draw(struct tableau *tableau);
 int tableau_move(struct tableau *tableau, unsigned int src, unsigned int dst);
-int tableau_auto(struct tableau *tableau);
 
 #endif
