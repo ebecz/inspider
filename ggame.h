@@ -8,7 +8,10 @@
 
 struct gnode {
 	struct tableau tableau;
-	const struct gnode *moves[MAX_MOVES];
+	struct {
+		const struct gnode *node;
+		struct move move;
+	} moves [MAX_MOVES];
 	int count;
 };
 
@@ -19,6 +22,6 @@ struct gtableau {
 
 void gtableau_init(struct gtableau *gtableau, const struct tableau *base);
 
-int gtableau_auto(struct tableau *tableau);
+const struct gnode *gtableau_next(struct gtableau *gtableau, const struct tableau *base);
 
 #endif

@@ -128,7 +128,7 @@ int find_largest_group(struct stack *stack)
 	return top;
 }
 
-int tableau_move(struct tableau *tableau, unsigned int src, unsigned int dst)
+int tableau_move(struct tableau *tableau, unsigned int src, unsigned int dst, struct move *move)
 {
 	int i, j, top;
 	if (src > NUM_STACKS) {
@@ -156,6 +156,10 @@ int tableau_move(struct tableau *tableau, unsigned int src, unsigned int dst)
 	for (top = find_largest_group(src_stack); top < src_stack->count; top++) {
 		for (i = top; i < src_stack->count; i++) {
 			if (dst_stack->pile[dst_stack->count - 1]->value == src_stack->pile[i]->value + 1) {
+				move->src.stack = src;
+				move->src.card = src_stack->pile[i];
+				move->dst.stack = dst;
+				move->dst.card = dst_stack->pile[dst_stack->count - 1];
 				for (j = i; j < src_stack->count; j++) {
 					dst_stack->pile[dst_stack->count++] = src_stack->pile[j];
 				}
@@ -167,4 +171,5 @@ int tableau_move(struct tableau *tableau, unsigned int src, unsigned int dst)
 
 	return -1;
 }
+
 

@@ -35,6 +35,13 @@ struct tableau {
 	struct stack stacks[NUM_STACKS];
 };
 
+struct move {
+	struct {
+		int stack;
+		const struct card *card;
+	} src, dst;
+};
+
 void deck_init(struct deck *deck);
 void deck_sufle(struct deck *deck);
 
@@ -46,6 +53,6 @@ void tableau_init(struct tableau *tableau, const struct deck *deck);
 void tableau_start(struct tableau *tableau);
 
 int tableau_draw(struct tableau *tableau);
-int tableau_move(struct tableau *tableau, unsigned int src, unsigned int dst);
+int tableau_move(struct tableau *tableau, unsigned int src, unsigned int dst, struct move *move);
 
 #endif

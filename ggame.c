@@ -46,18 +46,20 @@ static void release_node(struct gtableau *gtableau, const struct gnode * next)
 {
 }
 
-static int add_link(struct gnode *src, const struct gnode *dst)
+static int add_link(struct gnode *src, const struct gnode *dst, const struct move *move)
 {
 	int i;
 	for (i = 0; i < src->count; i++) {
-		if (src->moves[i] == dst)
+		if (src->moves[i].node == dst)
 			return 0;
 	}
 
 	if (src->count >= MAX_MOVES)
 		return -1;
 
-	src->moves[src->count++] = dst;
+	src->moves[src->count].node = dst;
+	src->moves[src->count].move = *move;
+	src->count++;
 	return 0;
 }
 
@@ -71,6 +73,7 @@ static struct gnode *fetch_free_node(struct gtableau *gtableau)
 
 static int gtableau_fill(struct gtableau *gtableau, struct gnode *node)
 {
+	struct move move;
 	struct gnode *cached;
 	struct gnode *next;
 	int i, j;
@@ -83,18 +86,18 @@ static int gtableau_fill(struct gtableau *gtableau, struct gnode *node)
 	for (i = 0; i < NUM_STACKS; i++) {
 		for (j = 0; j < NUM_STACKS; j++) {
 			next->tableau = node->tableau;
-			res = tableau_move(&next->tableau, i, j);
+			res = tableau_move(&next->tableau, i, j, &move);
 			if (res == 0) {
 				cached = find_cached_node(gtableau, &next->tableau);
 				if (cached == NULL) {
-					if (add_link(node, next) < 0)
+					if (add_link(node, next, &move) < 0)
 						return -1;
 					keep_node(gtableau, next);
 					next = fetch_free_node(gtableau);
 					if (next == NULL)
 						return -1;
 				} else {
-					if (add_link(node, cached) < 0)
+					if (add_link(node, cached, &move) < 0)
 						return -1;
 				}
 			}
@@ -104,25 +107,25 @@ static int gtableau_fill(struct gtableau *gtableau, struct gnode *node)
 	return 0;
 }
 
+struct gnode *gtableau_next(struct gtableau *gtableau, const struct tableau *base)
+{
+	struct gnode *node = find_cached_node(gtableau, base);
+	if (node == NULL) {
+
+		node = fetch_free_node(gtableau);
+		if (node == NULL)
+			return NULL;
+
+		node->tableau = *base;
+		keep_node(gtableau, node);
+	}
+	gtableau_fill(gtableau, node);
+	return node;
+}
+
 void gtableau_init(struct gtableau *gtableau, const struct tableau *base)
 {
 	memset(gtableau, 0, sizeof(*gtableau));
-	gtableau->list[0].tableau = *base;
-	gtableau->count = 1;
-	gtableau_fill(gtableau, &gtableau->list[0]);
-}
-
-int gtableau_auto(struct tableau *tableau)
-{
-	int i, j;
-	int res;
-	for (i = 0; i < NUM_STACKS; i++) {
-		for (j = 0; j < NUM_STACKS; j++) {
-			res = tableau_move(tableau, i, j);
-			if (res == 0)
-				return 0;
-		}
-	}
-	return -1;
+	gtableau_next(gtableau, base);
 }
 
