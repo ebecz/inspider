@@ -120,6 +120,11 @@ int find_largest_group(struct stack *stack)
 			top = i;
 		}
 	}
+	for (i = top; i < stack->count - 1; i++) {
+		if (stack->pile[i]->value - 1 != stack->pile[i + 1]->value) {
+			top = i + 1;
+		}
+	}
 	return top;
 }
 
