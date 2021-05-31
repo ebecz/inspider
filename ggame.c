@@ -107,7 +107,7 @@ static int gtableau_fill(struct gtableau *gtableau, struct gnode *node)
 	return 0;
 }
 
-struct gnode *gtableau_next(struct gtableau *gtableau, const struct tableau *base)
+const struct gnode *gtableau_next(struct gtableau *gtableau, const struct tableau *base)
 {
 	struct gnode *node = find_cached_node(gtableau, base);
 	if (node == NULL) {
@@ -126,6 +126,5 @@ struct gnode *gtableau_next(struct gtableau *gtableau, const struct tableau *bas
 void gtableau_init(struct gtableau *gtableau, const struct tableau *base)
 {
 	memset(gtableau, 0, sizeof(*gtableau));
-	gtableau_next(gtableau, base);
 }
 

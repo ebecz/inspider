@@ -102,6 +102,11 @@ void nctableau_finish(const struct nctableau *nctableau)
 	endwin();
 }
 
+static int same_suit_move(const struct move *move)
+{
+	return move->src.card->suit == move->dst.card->suit;
+}
+
 static void nctableau_print(const struct nctableau *nctableau)
 {
 	int i;
@@ -128,7 +133,7 @@ static void nctableau_print(const struct nctableau *nctableau)
 			mvprintw(row - 1 + i - node->count, 0,
 					"%d) Move %ls at %d to %ls at %d %s", i,
 					src_name, move->src.stack, dst_name, move->dst.stack,
-					move->src.card->suit == move->dst.card->suit ? " * ": " ");
+					same_suit_move(move) ? " * ": " ");
 
 		}
 	}
@@ -210,6 +215,7 @@ int _help(struct nctableau *nctableau, const int stash[], int step)
 			if (node->count == 0) {
 				swprintf(nctableau->msg, GAME_MSG_SIZE, L"There is no Available movements");
 				nctableau->options = NULL;
+				return 0;
 			} else {
 				swprintf(nctableau->msg, GAME_MSG_SIZE, L"Found %d moves, choose one:", node->count);
 				nctableau->options = node;
@@ -235,6 +241,40 @@ int _help(struct nctableau *nctableau, const int stash[], int step)
 	}
 }
 
+int _next_move(struct nctableau *nctableau, const int stash[], int step)
+{
+	const struct gnode *node;
+	switch(step) {
+		case 0:
+			node = gtableau_next(&nctableau->gtableau, &nctableau->tableau);
+			if (node == NULL) {
+				swprintf(nctableau->msg, GAME_MSG_SIZE, L"Unable to find free movements");
+				return 0;
+			}
+
+			if (node->count == 0) {
+				swprintf(nctableau->msg, GAME_MSG_SIZE, L"There is no Available movements");
+				return 0;
+			}
+
+			int i;
+			for (i = 0; i < node->count; i++) {
+				const struct move *move = &node->moves[i].move;
+				if (same_suit_move(move)) {
+					nctableau_move(nctableau, move->src.stack, move->dst.stack);
+					return 0;
+				}
+			}
+
+			swprintf(nctableau->msg, GAME_MSG_SIZE, L"There is no Same Suit Available movements");
+			return 0;
+
+		default:
+			return 0;
+	}
+}
+
+
 int _quit(struct nctableau *nctableau, const int stash[], int step)
 {
 	switch(step) {
@@ -245,12 +285,16 @@ int _quit(struct nctableau *nctableau, const int stash[], int step)
 	}
 }
 
-#define NUM_COMMANDS 4
+#define NUM_COMMANDS 5
 const struct command list[NUM_COMMANDS] =
 {
 	{
 		.cmd = 'm',
 		.function = _move,
+	},
+	{
+		.cmd = 'n',
+		.function = _next_move,
 	},
 	{
 		.cmd = 'd',
