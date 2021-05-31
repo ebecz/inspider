@@ -39,10 +39,10 @@ static int card_string(const struct card *card, wchar_t *buffer, size_t len)
 		"King ",
 	};
 	static const wchar_t *wsuits[MAX_SUITS] = {
-		BLACK_SPADE,
-		BLACK_CUBS,
 		BLACK_HEART,
-		BLACK_CUBS
+		BLACK_CUBS,
+		BLACK_DIAMONDS,
+		BLACK_SPADE,
 	};
 	return swprintf(buffer, len, L"[ %ls %6s ]", wsuits[card->suit], names[card->value]);
 }
@@ -126,8 +126,9 @@ static void nctableau_print(const struct nctableau *nctableau)
 			card_string(move->src.card, src_name, 16);
 			card_string(move->dst.card, dst_name, 16);
 			mvprintw(row - 1 + i - node->count, 0,
-					"%d) Move %ls at %d to %ls at %d", i,
-					src_name, move->src.stack, dst_name, move->dst.stack);
+					"%d) Move %ls at %d to %ls at %d %s", i,
+					src_name, move->src.stack, dst_name, move->dst.stack,
+					move->src.card->suit == move->dst.card->suit ? " * ": " ");
 
 		}
 	}
@@ -142,11 +143,26 @@ struct command {
 	int (*function)(struct nctableau *nctableau, const int stash[], int step);
 };
 
-int _move(struct nctableau *nctableau, const int stash[], int step)
-{
+void nctableau_move(struct nctableau *nctableau, int src, int dst) { 
+
 	struct move move;
 	int res;
 
+	res = tableau_move(&nctableau->tableau, src, dst, &move);
+	if (res == 0) {
+		wchar_t src_name[16];
+		wchar_t dst_name[16];
+		card_string(move.src.card, src_name, 16);
+		card_string(move.dst.card, dst_name, 16);
+		swprintf(nctableau->msg, GAME_MSG_SIZE, L"Moved %ls at %d to %ls at %d",
+				src_name, move.src.stack, dst_name, move.dst.stack);
+	} else {
+		swprintf(nctableau->msg, GAME_MSG_SIZE, L"Invalid Move");
+	}
+}
+
+int _move(struct nctableau *nctableau, const int stash[], int step)
+{
 	switch(step) {
 		case 0:
 			swprintf(nctableau->msg, GAME_MSG_SIZE, L"Which collumn to Move? [0-9]");
@@ -155,17 +171,7 @@ int _move(struct nctableau *nctableau, const int stash[], int step)
 			swprintf(nctableau->msg, GAME_MSG_SIZE, L"Move to where? [0-9]");
 			return 2;
 		case 2:
-			res = tableau_move(&nctableau->tableau, stash[1] - '0', stash[0] - '0', &move);
-			if (res == 0) {
-				wchar_t src_name[16];
-				wchar_t dst_name[16];
-				card_string(move.src.card, src_name, 16);
-				card_string(move.dst.card, dst_name, 16);
-				swprintf(nctableau->msg, GAME_MSG_SIZE, L"Moved %ls at %d to %ls at %d",
-						src_name, move.src.stack, dst_name, move.dst.stack);
-			} else {
-				swprintf(nctableau->msg, GAME_MSG_SIZE, L"Invalid Move");
-			}
+			nctableau_move(nctableau, stash[1] - '0', stash[0] - '0');
 			return 0;
 		default:
 			return 0;
@@ -205,9 +211,24 @@ int _help(struct nctableau *nctableau, const int stash[], int step)
 				swprintf(nctableau->msg, GAME_MSG_SIZE, L"There is no Available movements");
 				nctableau->options = NULL;
 			} else {
-				swprintf(nctableau->msg, GAME_MSG_SIZE, L"Found %d moves", node->count);
+				swprintf(nctableau->msg, GAME_MSG_SIZE, L"Found %d moves, choose one:", node->count);
 				nctableau->options = node;
 			}
+			return 1;
+		case 1:
+			// Hide options
+			node = nctableau->options;
+			nctableau->options = NULL;
+
+			int opt = stash[0] - '0';
+			if (opt > node->count) {
+				// Make an invalid Move
+				nctableau_move(nctableau, -1, -2);
+				return 0;
+			}
+
+			const struct move *move = &node->moves[opt].move;
+			nctableau_move(nctableau, move->src.stack, move->dst.stack);
 			return 0;
 		default:
 			return 0;
