@@ -265,8 +265,8 @@ int _next_move(struct nctableau *nctableau, const int stash[], int step)
 					return 0;
 				}
 			}
-
-			swprintf(nctableau->msg, GAME_MSG_SIZE, L"There is no Same Suit Available movements");
+			const struct move *move = &node->moves[0].move;
+			nctableau_move(nctableau, move->src.stack, move->dst.stack);
 			return 0;
 
 		default:
@@ -285,7 +285,20 @@ int _quit(struct nctableau *nctableau, const int stash[], int step)
 	}
 }
 
-#define NUM_COMMANDS 5
+int _status(struct nctableau *nctableau, const int stash[], int step)
+{
+	switch(step) {
+		case 0:
+			swprintf(nctableau->msg, GAME_MSG_SIZE, L"Nodes: %d/%d", nctableau->gtableau.count, MAX_GRAPH_NODES);
+			return 0;
+		default:
+			return 0;
+	}
+}
+
+
+
+#define NUM_COMMANDS 6
 const struct command list[NUM_COMMANDS] =
 {
 	{
@@ -303,6 +316,10 @@ const struct command list[NUM_COMMANDS] =
 	{
 		.cmd = 'h',
 		.function = _help,
+	},
+	{
+		.cmd = 's',
+		.function = _status,
 	},
 	{
 		.cmd = 'q',
