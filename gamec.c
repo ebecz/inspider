@@ -146,14 +146,15 @@ static void nctableau_print(const struct nctableau *nctableau)
 		for (i = 0; i < node->count; i++)
 		{
 			const struct move *move = &node->moves[i].move;
+			const struct gnode *next_node = node->moves[i].node;
 			wchar_t src_name[16];
 			wchar_t dst_name[16];
 			card_string(move->src.card, src_name, 16);
 			card_string(move->dst.card, dst_name, 16);
 			mvprintw(row - 1 + i - node->count, 0,
-					"%d) Move %ls at %d to %ls at %d %s", i,
+					"%d) Move %ls at %d to %ls at %d %s [%d]", i,
 					src_name, move->src.stack, dst_name, move->dst.stack,
-					same_suit_move(move) ? " * ": " ");
+					same_suit_move(move) ? " * ": " ", next_node->entropy);
 
 		}
 	}
@@ -278,15 +279,20 @@ int _next_move(struct nctableau *nctableau, const int stash[], int step)
 			}
 
 			int i;
+			const struct gnode *best_node = node;
+			const struct move *best_move = NULL;
 			for (i = 0; i < node->count; i++) {
-				const struct move *move = &node->moves[i].move;
-				if (same_suit_move(move)) {
-					nctableau_move(nctableau, move->src.stack, move->dst.stack);
-					return 0;
+				const struct gnode *next_node = node->moves[i].node;
+				if (next_node->entropy < best_node->entropy) {
+					best_node = next_node;
+					best_move = &node->moves[i].move;
 				}
 			}
-			const struct move *move = &node->moves[0].move;
-			nctableau_move(nctableau, move->src.stack, move->dst.stack);
+			if (best_move == NULL) {
+				swprintf(nctableau->msg, GAME_MSG_SIZE, L"There is no Available movements");
+				return 0;
+			}
+			nctableau_move(nctableau, best_move->src.stack, best_move->dst.stack);
 			return 0;
 
 		default:

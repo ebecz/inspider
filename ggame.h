@@ -7,6 +7,7 @@
 #define MAX_MOVES 16
 
 struct gnode {
+	int entropy;
 	struct tableau tableau;
 	struct {
 		const struct gnode *node;

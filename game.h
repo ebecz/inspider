@@ -55,4 +55,6 @@ void tableau_start(struct tableau *tableau);
 int tableau_draw(struct tableau *tableau);
 int tableau_move(struct tableau *tableau, unsigned int src, unsigned int dst, struct move *move);
 
+int tableau_entropy(const struct tableau *tableau);
+
 #endif

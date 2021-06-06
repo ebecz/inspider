@@ -197,4 +197,41 @@ int tableau_move(struct tableau *tableau, unsigned int src, unsigned int dst, st
 	return -1;
 }
 
+static int stack_entropy(const struct stack *stack)
+{
+	int i;
+	int entropy = 0;
+
+	if (stack->count == 0)
+		return 100;
+
+	if (stack->count == 1)
+		return 0;
+
+	for (i = 0; i < stack->count - 1; i++) {
+		const struct card *a = stack->pile[i];
+		const struct card *b = stack->pile[i + 1];
+		if (a->value == b->value + 1) {
+			if (a->suit == b->suit) {
+				entropy += 0;
+			} else {
+				entropy += 1;
+			}
+		} else {
+			entropy += 10;
+		}
+	}
+	return entropy;
+}
+
+int tableau_entropy(const struct tableau *tableau)
+{
+	int i;
+	int entropy = 0;
+	for (i = 0; i < NUM_STACKS; i++)
+	{
+		entropy += stack_entropy(&tableau->stacks[i]);
+	}
+	return entropy;
+}
 

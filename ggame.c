@@ -37,16 +37,18 @@ static struct gnode *find_cached_node(struct gtableau *gtableau, const struct ta
 	return NULL;
 }
 
-static void keep_node(struct gtableau *gtableau, const struct gnode * next)
+static void keep_node(struct gtableau *gtableau, struct gnode *next)
 {
+	next->entropy = tableau_entropy(&next->tableau);
 	gtableau->count++;
 }
 
 static void release_node(struct gtableau *gtableau, const struct gnode * next)
 {
+
 }
 
-static int add_link(struct gnode *src, const struct gnode *dst, const struct move *move)
+static int add_link(struct gnode *src, struct gnode *dst, const struct move *move)
 {
 	int i;
 	for (i = 0; i < src->count; i++) {
@@ -68,7 +70,8 @@ static struct gnode *fetch_free_node(struct gtableau *gtableau)
 	if (gtableau->count >= MAX_GRAPH_NODES)
 		return NULL;
 
-	return &gtableau->list[gtableau->count];
+	struct gnode *node = &gtableau->list[gtableau->count];
+	return node;
 }
 
 static int gtableau_fill(struct gtableau *gtableau, struct gnode *node)
