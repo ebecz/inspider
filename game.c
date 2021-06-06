@@ -69,7 +69,7 @@ void tableau_init(struct tableau *tableau, const struct deck *deck)
 static const struct card *stock_pick(struct stock *stock)
 {
 	if (stock->count == 0) {
-		error(-1, 0, "Unable to draw from a empty stock");
+		return NULL;
 	}
 	return stock->pile[--stock->count];
 }
@@ -91,7 +91,10 @@ void tableau_start(struct tableau *tableau)
 	const int INITIAL_DRAW = 54;
 	for (i = 0; i < INITIAL_DRAW; i++) {
 		struct stack *stack = &tableau->stacks[i % NUM_STACKS];
-		stack_push(stack, stock_pick(&tableau->stock));
+		const struct card *card = stock_pick(&tableau->stock);
+		if (card == NULL)
+			break;
+		stack_push(stack, card);
 	}
 }
 
@@ -128,12 +131,37 @@ int find_largest_group(struct stack *stack)
 	return top;
 }
 
+static int move_cards(struct tableau *tableau, int src, int starting, int dst, struct move *move)
+{
+	int i;
+	struct stack *src_stack = &tableau->stacks[src];
+	struct stack *dst_stack = &tableau->stacks[dst];
+
+	move->src.stack = src;
+	move->src.card = src_stack->pile[starting];
+	move->dst.stack = dst;
+	if (dst_stack->count == 0) {
+		move->dst.card = NULL;
+	} else {
+		move->dst.card = dst_stack->pile[dst_stack->count - 1];
+	}
+
+	for (i = starting; i < src_stack->count; i++) {
+		dst_stack->pile[dst_stack->count++] = src_stack->pile[i];
+	}
+	src_stack->count = starting;
+	return 0;
+
+}
+
 int tableau_move(struct tableau *tableau, unsigned int src, unsigned int dst, struct move *move)
 {
-	int i, j, top;
+	int i, top;
+
 	if (src > NUM_STACKS) {
 		return -1;
 	}
+
 	if (src > NUM_STACKS || dst > NUM_STACKS) {
 		return -1;
 	}
@@ -149,6 +177,11 @@ int tableau_move(struct tableau *tableau, unsigned int src, unsigned int dst, st
 		return -1;
 	}
 
+	if (dst_stack->count == 0) {
+		top = find_largest_group(src_stack);
+		return move_cards(tableau, src, top, dst, move);
+	}
+
 	if (dst_stack->count > MAX_CARDS_ON_A_PILE) {
 		return -1;
 	}
@@ -156,15 +189,7 @@ int tableau_move(struct tableau *tableau, unsigned int src, unsigned int dst, st
 	for (top = find_largest_group(src_stack); top < src_stack->count; top++) {
 		for (i = top; i < src_stack->count; i++) {
 			if (dst_stack->pile[dst_stack->count - 1]->value == src_stack->pile[i]->value + 1) {
-				move->src.stack = src;
-				move->src.card = src_stack->pile[i];
-				move->dst.stack = dst;
-				move->dst.card = dst_stack->pile[dst_stack->count - 1];
-				for (j = i; j < src_stack->count; j++) {
-					dst_stack->pile[dst_stack->count++] = src_stack->pile[j];
-				}
-				src_stack->count = i;
-				return 0;
+				return move_cards(tableau, src, i, dst, move);
 			}
 		}
 	}

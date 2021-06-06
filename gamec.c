@@ -38,24 +38,41 @@ static int card_string(const struct card *card, wchar_t *buffer, size_t len)
 		"Queen",
 		"King ",
 	};
-	static const wchar_t *wsuits[MAX_SUITS] = {
+	static const wchar_t *wsuits[8] = {
 		BLACK_HEART,
 		BLACK_CUBS,
 		BLACK_DIAMONDS,
 		BLACK_SPADE,
+		WHITE_HEART,
+		WHITE_CUBS,
+		WHITE_DIAMONDS,
+		WHITE_SPADE,
 	};
+
+	if (card == NULL)
+		return swprintf(buffer, len, L"<EMPTY>");
+
+	if (card->suit > 8 || card->value > MAX_CARD_VALUE)
+		return swprintf(buffer, len, L"<INVALID>");
+
 	return swprintf(buffer, len, L"[ %ls %6s ]", wsuits[card->suit], names[card->value]);
 }
 
 static void print_card(const struct card *card, unsigned int x, unsigned int y)
 {
 	wchar_t buffer[16];
-	static int suits[MAX_SUITS] = {
+	static int suits[4] = {
 		HEARTS,
 		CUBS,
 		DIAMONDS,
 		SPADES,
 	};
+
+	if (card == NULL)
+		return;
+
+	if (card->suit > 4)
+		return;
 
 	attron(COLOR_PAIR(suits[card->suit]));
 	card_string(card, buffer, 16);
@@ -104,6 +121,9 @@ void nctableau_finish(const struct nctableau *nctableau)
 
 static int same_suit_move(const struct move *move)
 {
+	if (move->dst.card == NULL)
+		return 0;
+
 	return move->src.card->suit == move->dst.card->suit;
 }
 
