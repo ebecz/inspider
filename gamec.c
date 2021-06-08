@@ -99,7 +99,7 @@ void nctableau_init(struct nctableau *nctableau)
 	tableau_init(&nctableau->tableau, &nctableau->deck);
 	tableau_start(&nctableau->tableau);
 
-	gtableau_init(&nctableau->gtableau, &nctableau->tableau);
+	gtableau_init(&nctableau->gtableau);
 
 	setlocale(LC_ALL, "");
 	initscr();
@@ -119,14 +119,6 @@ void nctableau_finish(const struct nctableau *nctableau)
 	endwin();
 }
 
-static int same_suit_move(const struct move *move)
-{
-	if (move->dst.card == NULL)
-		return 0;
-
-	return move->src.card->suit == move->dst.card->suit;
-}
-
 static void nctableau_print(const struct nctableau *nctableau)
 {
 	int i;
@@ -141,12 +133,12 @@ static void nctableau_print(const struct nctableau *nctableau)
 		nstack_print(&tableau->stacks[i], i * col / NUM_STACKS);
 	}
 
-	if (nctableau->options != NULL) {
-		const struct gnode *node = nctableau->options;
+	if (nctableau->node != NULL) {
+		const struct gnode *node = nctableau->node;
 		for (i = 0; i < node->count; i++)
 		{
 			const struct move *move = &node->moves[i].move;
-			const struct gnode *next_node = node->moves[i].node;
+			int entropy = node->moves[i].entropy;
 			wchar_t src_name[16];
 			wchar_t dst_name[16];
 			card_string(move->src.card, src_name, 16);
@@ -154,7 +146,7 @@ static void nctableau_print(const struct nctableau *nctableau)
 			mvprintw(row - 1 + i - node->count, 0,
 					"%d) Move %ls at %d to %ls at %d %s [%d]", i,
 					src_name, move->src.stack, dst_name, move->dst.stack,
-					same_suit_move(move) ? " * ": " ", next_node->entropy);
+					node->_entropy > entropy ? " * ": " ", entropy);
 
 		}
 	}
@@ -229,23 +221,23 @@ int _help(struct nctableau *nctableau, const int stash[], int step)
 			node = gtableau_next(&nctableau->gtableau, &nctableau->tableau);
 			if (node == NULL) {
 				swprintf(nctableau->msg, GAME_MSG_SIZE, L"Unable to find free movements");
-				nctableau->options = NULL;
+				nctableau->node = NULL;
 				return 0;
 			}
 
 			if (node->count == 0) {
 				swprintf(nctableau->msg, GAME_MSG_SIZE, L"There is no Available movements");
-				nctableau->options = NULL;
+				nctableau->node = NULL;
 				return 0;
 			} else {
-				swprintf(nctableau->msg, GAME_MSG_SIZE, L"Found %d moves, choose one:", node->count);
-				nctableau->options = node;
+				swprintf(nctableau->msg, GAME_MSG_SIZE, L"Found %d moves, choose one: [%d]", node->count, node->_entropy);
+				nctableau->node = node;
 			}
 			return 1;
 		case 1:
 			// Hide options
-			node = nctableau->options;
-			nctableau->options = NULL;
+			node = nctableau->node ;
+			nctableau->node = NULL;
 
 			int opt = stash[0] - '0';
 			if (opt > node->count) {
@@ -279,12 +271,11 @@ int _next_move(struct nctableau *nctableau, const int stash[], int step)
 			}
 
 			int i;
-			const struct gnode *best_node = node;
 			const struct move *best_move = NULL;
+			int entropy = node->_entropy;
 			for (i = 0; i < node->count; i++) {
-				const struct gnode *next_node = node->moves[i].node;
-				if (next_node->entropy < best_node->entropy) {
-					best_node = next_node;
+				if (entropy > node->moves[i].entropy) {
+					entropy = node->moves[i].entropy;
 					best_move = &node->moves[i].move;
 				}
 			}

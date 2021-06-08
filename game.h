@@ -1,7 +1,7 @@
 #ifndef __GAME_H__
 #define __GAME_H__
 
-#define NUM_STACKS 10
+#define NUM_STACKS 9
 #define MAX_SUITS 4
 #define MAX_CARD_VALUE 13
 #define NUM_CARDS_ON_A_DECK (MAX_SUITS * MAX_CARD_VALUE)
@@ -40,6 +40,7 @@ struct move {
 		int stack;
 		const struct card *card;
 	} src, dst;
+	int draw;
 };
 
 void deck_init(struct deck *deck);

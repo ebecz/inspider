@@ -203,10 +203,13 @@ static int stack_entropy(const struct stack *stack)
 	int entropy = 0;
 
 	if (stack->count == 0)
-		return 100;
+		return 99;
+
+	if (stack->pile[0]->value != MAX_CARD_VALUE - 1)
+		entropy += 100;
 
 	if (stack->count == 1)
-		return 0;
+		return entropy;
 
 	for (i = 0; i < stack->count - 1; i++) {
 		const struct card *a = stack->pile[i];
@@ -215,10 +218,10 @@ static int stack_entropy(const struct stack *stack)
 			if (a->suit == b->suit) {
 				entropy += 0;
 			} else {
-				entropy += 1;
+				entropy += 5;
 			}
 		} else {
-			entropy += 10;
+			entropy += 20;
 		}
 	}
 	return entropy;

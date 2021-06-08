@@ -11,7 +11,7 @@ struct nctableau {
 	struct tableau tableau;
 	wchar_t msg[GAME_MSG_SIZE];
 	struct gtableau gtableau;
-	const struct gnode *options;
+	const struct gnode *node;
 };
 
 void nctableau_init(struct nctableau *nctableau);
